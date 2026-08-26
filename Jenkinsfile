@@ -1,67 +1,93 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    IMAGE = "DOCKERHUB_USERNAME/kml-milk"
-    NAMESPACE = "kml-milk"
-    APP_NAME = "kml-milk"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
+    environment {
+        DOCKER_IMAGE = 'kmlraut/kml-milk'
     }
 
-    stage('Python Test') {
-      steps {
-        sh '''
-          python3 -m venv .ci-venv
-          . .ci-venv/bin/activate
-          pip install -r requirements.txt
-          python manage.py check
-          python manage.py test
-        '''
-      }
-    }
+    stages {
 
-    stage('Build Docker Image') {
-      steps {
-        sh 'docker build -t ${IMAGE}:${BUILD_NUMBER} -t ${IMAGE}:latest .'
-      }
-    }
-
-    stage('Push Docker Image') {
-      steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-          sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push ${IMAGE}:${BUILD_NUMBER}
-            docker push ${IMAGE}:latest
-            docker logout
-          '''
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
         }
-      }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build \
+                        -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .
+                '''
+            }
+        }
+
+        stage('Test Container') {
+            steps {
+                sh '''
+                    docker rm -f kml-milk-dairy-test || true
+
+                    docker run -d \
+                        --name kml-milk-dairy-test \
+                        -p 8082:80 \
+                        ${DOCKER_IMAGE}:${BUILD_NUMBER}
+
+                    sleep 5
+
+                    curl -f http://localhost:8082
+
+                    docker rm -f kml-milk-dairy-test
+                '''
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            -u "$DOCKER_USERNAME" \
+                            --password-stdin
+
+                        docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                     echo "Deploying dairy-deploy to Kubernetes..."
+
+                     export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+                     kubectl set image deployment/dairy-deploy \
+                     dairy-deploy=${DOCKER_IMAGE}:${BUILD_NUMBER}
+
+                     kubectl rollout status deployment/dairy-deploy
+
+                     echo "Kubernetes deployment successful!"
+                   '''
+            }
+        }
     }
 
-    stage('Deploy to Kubernetes') {
-      steps {
-        sh '''
-          sed "s#DOCKERHUB_USERNAME/kml-milk:BUILD_NUMBER#${IMAGE}:${BUILD_NUMBER}#g" k8s/deployment.yaml > /tmp/deployment.yaml
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f /tmp/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=180s
-        '''
-      }
-    }
-  }
+    post {
+        success {
+            echo 'CI/CD Pipeline completed successfully!'
+        }
 
-  post {
-    always {
-      sh 'docker image prune -f || true'
+        failure {
+            echo 'CI/CD Pipeline failed!'
+        }
     }
-    success {
-      echo 'KML Milk CI/CD completed successfully.'
-    }
-  }
 }
