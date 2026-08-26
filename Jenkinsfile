@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'kmlraut/kml-milk'
         KUBECONFIG   = '/var/lib/jenkins/.kube/config'
-        DOCKER_CREDENTIALS ='kmlraut-credential'
+
     }
 
     stages {
@@ -45,7 +45,7 @@ pipeline {
             steps {
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-creds',
+                        credentialsId: 'kmlraut-credential',
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
