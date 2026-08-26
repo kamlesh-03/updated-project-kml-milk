@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} | KML Milk{% endblock %}
+{% block content %}
+<section class="detail">
+  <div class="detail-image" style="background-image:url('{{ product.image_url|default:"https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=1200&q=80" }}')"></div>
+  <div class="detail-info">
+    <p class="eyebrow">{{ product.get_section_display }}</p>
+    <h1>{{ product.name }}</h1>
+    <div class="price">₹{{ product.price }}</div>
+    <p><strong>Pack:</strong> {{ product.pack_size }}{{ product.unit }}</p>
+    <p><strong>Expected expiry:</strong> {{ product.expiry_date }}</p>
+    <p>{{ product.description }}</p>
+    <div class="info-box"><strong>How to consume/use</strong><p>{{ product.usage|default:"Follow the storage and serving instructions supplied on the package." }}</p></div>
+    <div class="info-box"><strong>Ingredients</strong><p>{{ product.ingredients|default:"As listed on the product label." }}</p></div>
+    <p class="market">{{ product.market_rate_note }}</p>
+    <div class="actions">
+      <a class="btn" href="{{ whatsapp }}" target="_blank">Order on WhatsApp</a>
+      <button class="btn secondary" onclick="addToCart({{ product.id }}, '{{ product.name|escapejs }}')">Add to Website Order</button>
+    </div>
+  </div>
+</section>
+<section class="checkout">
+  <h2>Website order</h2>
+  <form method="post" action="/order/" onsubmit="return prepareOrder(this)">
+    {% csrf_token %}
+    <input type="hidden" name="items" id="order-items">
+    <div class="form-grid">
+      <input name="name" placeholder="Full name" required>
+      <input name="phone" placeholder="Phone number" required>
+      <input name="email" placeholder="Email">
+      <textarea name="address" placeholder="Delivery address" required></textarea>
+      <textarea name="notes" placeholder="Order notes"></textarea>
+    </div>
+    <button class="btn" type="submit">Place website order</button>
+  </form>
+</section>
+{% endblock %}

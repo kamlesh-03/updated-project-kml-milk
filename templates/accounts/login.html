@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Login | KML Milk{% endblock %}
+{% block content %}
+<div class="auth-card"><h1>Customer login</h1><p>Use your username, email or phone number with your password.</p>
+<form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn">Login</button></form>
+<p>New customer? <a href="/accounts/register/">Create account</a></p></div>
+{% endblock %}

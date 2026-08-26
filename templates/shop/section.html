@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} | KML Milk{% endblock %}
+{% block content %}
+<section class="page-head"><p class="eyebrow">KML MILK SHOP</p><h1>{{ title }}</h1><p>Tap a product to open its dedicated page — no endless scrolling.</p></section>
+<div class="product-grid">
+{% for p in products %}
+<a class="product-card" href="/product/{{ p.slug }}/">
+  <div class="product-image" style="background-image:url('{{ p.image_url|default:"https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=900&q=80" }}')"></div>
+  <div class="product-body">
+    <span class="tag">{{ p.pack_size }}{{ p.unit }}</span>
+    <h2>{{ p.name }}</h2>
+    <p>₹{{ p.price }} • Expected expiry: {{ p.expiry_date }}</p>
+    <span class="open">View product →</span>
+  </div>
+</a>
+{% empty %}
+<div class="empty"><h2>No products added yet.</h2><p>Admin can add products from Django Admin.</p></div>
+{% endfor %}
+</div>
+{% endblock %}

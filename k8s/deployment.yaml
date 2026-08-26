@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kml-milk
+  namespace: kml-milk
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: kml-milk
+  template:
+    metadata:
+      labels:
+        app: kml-milk
+    spec:
+      containers:
+        - name: kml-milk
+          image: DOCKERHUB_USERNAME/kml-milk:BUILD_NUMBER
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DJANGO_DEBUG
+              value: "False"
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kml-milk-secret
+                  key: secret-key
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kml-milk-secret
+  namespace: kml-milk
+type: Opaque
+stringData:
+  secret-key: "CHANGE-ME-IN-K8S"

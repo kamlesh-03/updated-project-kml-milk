@@ -1,0 +1,46 @@
+{% load i18n static %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}KML Milk Pvt Ltd{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">🥛 KML MILK <span>PVT LTD</span></a>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/shop/fat/">Fat Products</a>
+    <a href="/shop/fresh/">Fresh Daily</a>
+    <a href="/shop/icecream/">Dudhbar</a>
+    <a href="/farm/">Farm</a>
+    <a href="/contact/">Contact</a>
+    {% if user.is_authenticated %}
+      <a href="/admin/">Admin</a>
+      <a href="/accounts/logout/">Logout</a>
+    {% else %}
+      <a href="/accounts/login/">Login</a>
+    {% endif %}
+  </nav>
+  <form action="/i18n/setlang/" method="post" class="lang">
+    {% csrf_token %}
+    <select name="language" onchange="this.form.submit()">
+      <option value="en" {% if LANGUAGE_CODE == "en" %}selected{% endif %}>English</option>
+      <option value="mr" {% if LANGUAGE_CODE == "mr" %}selected{% endif %}>मराठी</option>
+      <option value="hi" {% if LANGUAGE_CODE == "hi" %}selected{% endif %}>हिन्दी</option>
+    </select>
+  </form>
+</header>
+{% if messages %}
+<div class="messages">{% for message in messages %}<div>{{ message }}</div>{% endfor %}</div>
+{% endif %}
+<main>{% block content %}{% endblock %}</main>
+<footer>
+  <strong>KML Milk Pvt Ltd</strong> • KML Agros, Pimpalgaon Khambi, Ta. Arjuni Morgaon, Dist. Gondia, Maharashtra 441702
+  • +91 9923573738
+</footer>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

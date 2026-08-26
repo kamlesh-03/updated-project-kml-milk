@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kml-milk
+  namespace: kml-milk
+spec:
+  type: LoadBalancer
+  selector:
+    app: kml-milk
+  ports:
+    - port: 80
+      targetPort: 8000

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Our Farm | KML Milk{% endblock %}
+{% block content %}
+<section class="page-head"><p class="eyebrow">KML AGRO FARMS</p><h1>Farm Diary & cultivation</h1><p>Admin-managed stories about animal care, cultivation, collection and dairy production.</p></section>
+<div class="article-grid">{% for post in posts %}<article><div class="article-img" style="background-image:url('{{ post.image_url|default:"https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=1000&q=80" }}')"></div><div class="article-body"><h2>{{ post.title }}</h2><p>{{ post.content }}</p></div></article>{% empty %}<div class="empty"><h2>Farm diary is coming soon.</h2><p>Add entries through Django Admin.</p></div>{% endfor %}</div>
+{% endblock %}
