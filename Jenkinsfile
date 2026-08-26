@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'kmlraut/kml-milk'
         KUBECONFIG   = '/var/lib/jenkins/.kube/config'
+        DOCKER_CREDENTIALS ='kmlraut-credential'
     }
 
     stages {
