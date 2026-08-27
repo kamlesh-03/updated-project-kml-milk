@@ -15,11 +15,12 @@ pipeline {
     stage('Python Test') {
       steps {
         sh '''
-          python3 -m venv .ci-venv
-          . .ci-venv/bin/activate
-          pip install -r requirements.txt
-          python manage.py check
-          python manage.py test
+            python3 -m venv .ci-venv
+            . .ci-venv/bin/activate
+            pip install -r requirements.txt
+            python manage.py makemigrations
+            python manage.py check
+            python manage.py test
         '''
       }
     }
