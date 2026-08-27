@@ -36,7 +36,7 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
           sh '''
               echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-              docker push kmlraut/kml-milk:9
+              docker push kmlraut/kml-milk:${BUILD_NUMBER}
               docker push kmlraut/kml-milk:latest
           '''
         }
